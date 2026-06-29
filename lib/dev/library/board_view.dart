@@ -22,7 +22,7 @@ class BoardView extends StatefulWidget {
 
 class _BoardViewState extends State<BoardView> {
   // Footprint of one node = iPhone 15 DeviceFrame (393×852 + 10px bezel each
-  // side) plus the caption row above it.
+  // side) plus the caption/handle row above it.
   static const double _nodeW = 413;
   static const double _nodeH = 900;
   static const double _pad = 240;
@@ -31,6 +31,22 @@ class _BoardViewState extends State<BoardView> {
   /// updated as the user drags a frame, so both the positioned frames and the
   /// [_EdgePainter] read the same moving rects.
   late Map<String, Offset> _positions;
+
+  /// Drives the canvas transform; lets us map pointer positions into scene
+  /// (canvas) coordinates so a dragged frame tracks the cursor 1:1 at any zoom.
+  final TransformationController _transform = TransformationController();
+
+  /// Key on the InteractiveViewer so we can resolve global→viewport→scene.
+  final GlobalKey _viewportKey = GlobalKey();
+
+  /// While a frame handle is pressed, canvas panning is suspended so the drag
+  /// moves the frame instead of the whole graph (resolves the gesture arena vs.
+  /// InteractiveViewer). Zoom stays enabled throughout.
+  bool _panEnabled = true;
+
+  // Per-drag anchors (scene-space).
+  Offset _dragStartScene = Offset.zero;
+  Offset _dragStartPos = Offset.zero;
 
   @override
   void initState() {
@@ -45,6 +61,24 @@ class _BoardViewState extends State<BoardView> {
     if (widget.board != oldWidget.board) {
       _positions = {for (final n in widget.board.nodes) n.id: n.position};
     }
+  }
+
+  @override
+  void dispose() {
+    _transform.dispose();
+    super.dispose();
+  }
+
+  /// Maps a global pointer position to scene/canvas coordinates via the
+  /// viewport render box and the current transform.
+  Offset _toScene(Offset global) {
+    final box = _viewportKey.currentContext?.findRenderObject() as RenderBox?;
+    if (box == null) return global;
+    return _transform.toScene(box.globalToLocal(global));
+  }
+
+  void _setPan(bool enabled) {
+    if (_panEnabled != enabled) setState(() => _panEnabled = enabled);
   }
 
   @override
@@ -75,14 +109,19 @@ class _BoardViewState extends State<BoardView> {
     };
 
     return InteractiveViewer(
+      key: _viewportKey,
+      transformationController: _transform,
       constrained: false,
       boundaryMargin: const EdgeInsets.all(600),
+      panEnabled: _panEnabled,
       minScale: 0.25,
       maxScale: 2,
       child: SizedBox(
         width: canvasW,
         height: canvasH,
         child: Stack(
+          // Don't clip frames dragged beyond the seed canvas bounds.
+          clipBehavior: Clip.none,
           children: [
             Positioned.fill(child: ColoredBox(color: board.style.background)),
             Positioned.fill(
@@ -95,39 +134,74 @@ class _BoardViewState extends State<BoardView> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // The caption is the drag handle: grab a frame by its title
-                    // to move it. Pointer deltas are already in canvas
-                    // coordinates (the InteractiveViewer transforms them), so
-                    // they're added straight to the live position.
-                    MouseRegion(
-                      cursor: SystemMouseCursors.grab,
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onPanUpdate: (d) => setState(
-                          () => _positions[n.id] = _positions[n.id]! + d.delta,
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              n.label.toUpperCase(),
-                              style: Workbench.sectionHeader.copyWith(
-                                color: Workbench.textMuted,
-                              ),
-                            ),
-                            const SizedBox(height: 14),
-                          ],
+                    // Drag handle: grab a frame by this bar to move it. A
+                    // Listener suspends canvas panning the instant the handle is
+                    // pressed, so this drag wins over InteractiveViewer; the
+                    // motion is mapped through the transform so the frame tracks
+                    // the cursor at any zoom.
+                    Listener(
+                      onPointerDown: (_) => _setPan(false),
+                      onPointerUp: (_) => _setPan(true),
+                      onPointerCancel: (_) => _setPan(true),
+                      child: MouseRegion(
+                        cursor: SystemMouseCursors.grab,
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onPanStart: (d) {
+                            _dragStartScene = _toScene(d.globalPosition);
+                            _dragStartPos = _positions[n.id]!;
+                          },
+                          onPanUpdate: (d) {
+                            final scene = _toScene(d.globalPosition);
+                            setState(() {
+                              _positions[n.id] =
+                                  _dragStartPos + (scene - _dragStartScene);
+                            });
+                          },
+                          onPanEnd: (_) => _setPan(true),
+                          child: _DragHandle(label: n.label),
                         ),
                       ),
                     ),
-                    // The inner screen stays fully interactive (and so does its
-                    // hover-inspector) — only the caption above drags the frame.
+                    const SizedBox(height: 12),
+                    // The inner screen stays fully interactive (taps, scroll,
+                    // hover-inspector) — only the handle above drags the frame.
                     DeviceFrame(child: InspectScope(child: n.builder(context))),
                   ],
                 ),
               ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// A visible grab bar above each frame — the explicit drag target.
+class _DragHandle extends StatelessWidget {
+  const _DragHandle({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: Workbench.surface,
+        border: Border.all(color: Workbench.border),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.drag_indicator, size: 14, color: Workbench.textMuted),
+          const SizedBox(width: 6),
+          Text(
+            label.toUpperCase(),
+            style: Workbench.sectionHeader.copyWith(color: Workbench.textMuted),
+          ),
+        ],
       ),
     );
   }
