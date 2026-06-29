@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:vasc_pro/dev/library/canvas_stage.dart';
 import 'package:vasc_pro/dev/library/device_frame.dart';
+import 'package:vasc_pro/dev/library/inspectable.dart';
 import 'package:vasc_pro/dev/library/library_models.dart';
 import 'package:vasc_pro/dev/storyboard/storyboards.dart';
 
@@ -36,7 +37,8 @@ LibrarySection storyboardsSection() {
                       for (final frame in sb.frames) ...[
                         DeviceFrame(
                           label: frame.label,
-                          child: frame.builder(context),
+                          // Only here is hover-inspection enabled.
+                          child: InspectScope(child: frame.builder(context)),
                         ),
                         const SizedBox(width: 32),
                       ],

@@ -1,10 +1,29 @@
 import 'package:flutter/material.dart';
 import 'workbench_theme.dart';
 
-/// Workbench helper: wraps a component so HOVERING it reveals its type name,
-/// letting you point at exactly which component you want changed. It's purely a
-/// hover tooltip — no effect on layout, taps, or the screen's own behaviour, so
-/// it's safe to leave around the production widgets.
+/// Marks a subtree where component hover-inspection is active. ONLY the
+/// Storyboards section enables it, so hover labels appear there and nowhere else
+/// — not the App walkthrough, not the Components page, not the live app.
+class InspectScope extends InheritedWidget {
+  const InspectScope({super.key, this.enabled = true, required super.child});
+
+  final bool enabled;
+
+  /// True only when an enabled [InspectScope] is an ancestor.
+  static bool of(BuildContext context) {
+    final scope = context.dependOnInheritedWidgetOfExactType<InspectScope>();
+    return scope?.enabled ?? false;
+  }
+
+  @override
+  bool updateShouldNotify(InspectScope oldWidget) =>
+      enabled != oldWidget.enabled;
+}
+
+/// Wraps a component so that — ONLY inside an enabled [InspectScope] (the
+/// Storyboards section) — hovering it reveals its type name, letting you point
+/// at exactly which component to change. Everywhere else it is a pure
+/// pass-through with zero effect on layout, taps, or behaviour.
 class Inspectable extends StatelessWidget {
   const Inspectable(this.child, {super.key, this.name});
 
@@ -16,6 +35,7 @@ class Inspectable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (!InspectScope.of(context)) return child;
     return Tooltip(
       message: name ?? child.runtimeType.toString(),
       waitDuration: const Duration(milliseconds: 120),
