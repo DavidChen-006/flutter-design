@@ -116,26 +116,48 @@ class _Sidebar extends StatelessWidget {
     ];
   }
 
+  Widget _sectionHeader(String title, {required bool first}) => Padding(
+        padding: EdgeInsets.fromLTRB(20, first ? 22 : 26, 20, 10),
+        child: Text(
+          title.toUpperCase(),
+          style: Workbench.sectionHeader,
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
+    final first = sections.first;
+    final rest = sections.skip(1);
     return Container(
       width: Workbench.sidebarWidth,
       color: Workbench.sidebarBg,
       child: SafeArea(
         right: false,
-        child: ListView(
-          padding: const EdgeInsets.only(bottom: 24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            for (var i = 0; i < sections.length; i++) ...[
-              Padding(
-                padding: EdgeInsets.fromLTRB(20, i == 0 ? 22 : 26, 20, 10),
-                child: Text(
-                  sections[i].title.toUpperCase(),
-                  style: Workbench.sectionHeader,
+            // First section (Components): header pinned, entries get the
+            // remaining vertical space and scroll internally when they overflow.
+            _sectionHeader(first.title, first: true),
+            Expanded(
+              child: ScrollConfiguration(
+                // Invisible scroll: no scrollbar chrome, just the behavior.
+                behavior:
+                    ScrollConfiguration.of(context).copyWith(scrollbars: false),
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  children: [
+                    for (final entry in first.entries) ..._rows(entry, 0),
+                  ],
                 ),
               ),
-              for (final entry in sections[i].entries) ..._rows(entry, 0),
+            ),
+            // Remaining sections (Storyboards, App): pinned, always visible.
+            for (final section in rest) ...[
+              _sectionHeader(section.title, first: false),
+              for (final entry in section.entries) ..._rows(entry, 0),
             ],
+            const SizedBox(height: 24),
           ],
         ),
       ),
