@@ -3,21 +3,30 @@ import '../../features/_demo/placeholder_screen.dart';
 import '../../features/welcome/welcome_screen.dart';
 import 'storyboard_models.dart';
 
-/// LAYER 3 — The board REGISTRY.
+/// LAYER 3 — The board REGISTRY (the live map of the whole app).
 ///
-/// Each [Board] is a storyboard modeled as a directed graph: nodes are iPhone
-/// frames placed at x,y positions, edges are the directed transitions between
-/// them. Flows can branch and loop — they are NOT forced to be linear.
+/// The storyboard is ONE picture of your entire product: every real screen is an
+/// iPhone frame ([StoryNode]) and every navigation path between screens is a
+/// directed arrow ([StoryEdge]). Keep ALL your screens in a single board (e.g.
+/// `App Flow`) so the storyboard shows the whole app and how it connects at a
+/// glance — do NOT scatter screens across separate one-frame boards with no
+/// arrows between them.
 ///
-/// HOW TO ADD / SHAPE A FLOW:
+/// Flows branch (several edges out of a node) and cycle (an edge pointing back) —
+/// they are NOT forced linear. Drag a frame by its caption to rearrange; the
+/// arrows follow.
+///
+/// HOW TO SHAPE A FLOW:
 ///   1. Build the screen in `lib/features/<flow>/<screen>.dart`.
-///   2. Add a `StoryNode(id, label, builder, position)` to a board's `nodes`.
-///   3. Connect it with `StoryEdge(from, to, label)` entries — branch by adding
-///      several edges out of one node; loop back by pointing an edge at an
-///      earlier node. Drag/zoom the board to read the graph.
+///   2. Add a `StoryNode(id, label, builder, position)` to the board's `nodes`.
+///   3. Connect nodes with `StoryEdge(from, to, label)` — label each arrow with
+///      the action that triggers the transition; add a back-edge for return paths.
+///
+/// The board below is a PLACEHOLDER flow. Replace these demo frames with your
+/// app's real screens — keep them all in this one board — and rewire the arrows.
 const List<Board> kBoards = [
   Board(
-    title: 'Example Flow',
+    title: 'App Flow',
     nodes: [
       StoryNode(
         id: 'start',

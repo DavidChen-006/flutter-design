@@ -84,6 +84,32 @@ Flows **branch** (several edges out of a node) and **cycle** (an edge pointing
 back) — they are NOT forced linear. Boards are defined in
 `lib/dev/storyboard/storyboards.dart` as `kBoards`.
 
+**The storyboard is the live MAP OF THE WHOLE APP.** Put EVERY real screen in as
+a frame and connect the screens with arrows, so the board shows the entire
+product and how its screens flow into each other at a glance. Prefer ONE board
+(e.g. titled `App Flow`) holding ALL the app's frames — do NOT scatter screens
+across separate one-frame boards with no arrows between them. Label each
+`StoryEdge` with the action that triggers the transition, and add a back-edge for
+return paths (a cycle):
+
+```dart
+const List<Board> kBoards = [
+  Board(
+    title: 'App Flow',
+    nodes: [
+      StoryNode(id: 'welcome', label: 'Welcome', builder: _welcome, position: Offset(0, 0)),
+      StoryNode(id: 'home',    label: 'Home',    builder: _home,    position: Offset(640, 0)),
+      StoryNode(id: 'profile', label: 'Profile', builder: _profile, position: Offset(1280, 0)),
+    ],
+    edges: [
+      StoryEdge(from: 'welcome', to: 'home',    label: 'Get started'),
+      StoryEdge(from: 'home',    to: 'profile', label: 'Profile tab'),
+      StoryEdge(from: 'profile', to: 'home',    label: 'Home tab'), // back (cycle)
+    ],
+  ),
+];
+```
+
 **The flow is the user's to define — ALWAYS ask the user how screens connect**
 before wiring edges. Render is `BoardView` (pan/zoom canvas + arrows). Hovering a
 component inside a board frame shows its type name (`InspectScope`/`Inspectable`),
