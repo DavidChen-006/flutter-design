@@ -6,20 +6,19 @@ import 'package:vasc_pro/dev/library/workbench_theme.dart';
 import 'package:vasc_pro/dev/storyboard/storyboard_models.dart';
 import 'package:vasc_pro/dev/storyboard/storyboards.dart';
 
-/// The "App" section — the INHERITANCE layer. It reads the SAME [kStoryboards]
-/// data as the Storyboards section, but instead of laying every frame out side
-/// by side, it lets you walk a single storyboard interactively inside one
-/// iPhone frame (Next/Back), as if you were using the live build.
+/// The "App" section walks a [Board]'s graph interactively in ONE iPhone frame:
+/// start at the root node, then follow a button per outgoing edge (branches).
+/// "Back" pops the navigation history, so cycles work too.
 LibrarySection appSection() {
   final entries = <LibraryEntry>[];
-  for (var i = 0; i < kStoryboards.length; i++) {
-    final sb = kStoryboards[i];
+  for (var i = 0; i < kBoards.length; i++) {
+    final board = kBoards[i];
     entries.add(
       LibraryEntry(
         id: 'app-$i',
-        label: sb.title,
+        label: board.title,
         icon: Icons.phone_iphone,
-        builder: (context) => _AppWalkthrough(storyboard: sb),
+        builder: (context) => _AppWalkthrough(board: board),
       ),
     );
   }
@@ -27,9 +26,9 @@ LibrarySection appSection() {
 }
 
 class _AppWalkthrough extends StatelessWidget {
-  const _AppWalkthrough({required this.storyboard});
+  const _AppWalkthrough({required this.board});
 
-  final Storyboard storyboard;
+  final Board board;
 
   @override
   Widget build(BuildContext context) {
@@ -38,61 +37,77 @@ class _AppWalkthrough extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CanvasHeader(title: storyboard.title, subtitle: 'Walk through the build'),
-          Center(child: _Walker(frames: storyboard.frames)),
+          CanvasHeader(
+            title: board.title,
+            subtitle: 'Walk the flow — follow a branch, or go back',
+          ),
+          Center(child: _Walker(board: board)),
         ],
       ),
     );
   }
 }
 
-/// Holds the current frame index and renders one [DeviceFrame] plus stealth Next
-/// / Back controls beneath it.
+/// Tracks the current node + a history stack, rendering the node in a
+/// [DeviceFrame] with one stealth button per outgoing edge.
 class _Walker extends StatefulWidget {
-  const _Walker({required this.frames});
+  const _Walker({required this.board});
 
-  final List<Frame> frames;
+  final Board board;
 
   @override
   State<_Walker> createState() => _WalkerState();
 }
 
 class _WalkerState extends State<_Walker> {
-  int _index = 0;
+  late String _current = _rootId();
+  final List<String> _history = [];
+
+  String _rootId() {
+    final board = widget.board;
+    if (board.nodes.isEmpty) return '';
+    final targets = board.edges.map((e) => e.to).toSet();
+    return board.nodes
+        .firstWhere((n) => !targets.contains(n.id),
+            orElse: () => board.nodes.first)
+        .id;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final frames = widget.frames;
-    if (frames.isEmpty) {
-      return Text('No frames in this storyboard.', style: Workbench.entryLabel);
+    final board = widget.board;
+    final node = board.nodeById(_current);
+    if (node == null) {
+      return Text('Empty board.', style: Workbench.entryLabel);
     }
-
-    final frame = frames[_index];
-    final atStart = _index == 0;
-    final atEnd = _index == frames.length - 1;
+    final outgoing = board.edges.where((e) => e.from == _current).toList();
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        DeviceFrame(child: frame.builder(context)),
-        const SizedBox(height: 24),
-        Row(
-          mainAxisSize: MainAxisSize.min,
+        DeviceFrame(child: node.builder(context)),
+        const SizedBox(height: 18),
+        Text(node.label, style: Workbench.entryLabelSelected),
+        const SizedBox(height: 16),
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 12,
+          runSpacing: 12,
           children: [
             _NavButton(
               label: 'Back',
-              onPressed: atStart ? null : () => setState(() => _index--),
+              onPressed: _history.isEmpty
+                  ? null
+                  : () => setState(() => _current = _history.removeLast()),
             ),
-            const SizedBox(width: 20),
-            Text(
-              '${_index + 1} / ${frames.length}  ·  ${frame.label}',
-              style: Workbench.entryLabel,
-            ),
-            const SizedBox(width: 20),
-            _NavButton(
-              label: 'Next',
-              onPressed: atEnd ? null : () => setState(() => _index++),
-            ),
+            for (final e in outgoing)
+              _NavButton(
+                label: e.label ?? board.nodeById(e.to)?.label ?? e.to,
+                onPressed: () => setState(() {
+                  _history.add(_current);
+                  _current = e.to;
+                }),
+              ),
           ],
         ),
       ],

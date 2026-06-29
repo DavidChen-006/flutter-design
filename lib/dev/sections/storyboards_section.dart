@@ -1,54 +1,52 @@
 import 'package:flutter/material.dart';
-import 'package:vasc_pro/dev/library/canvas_stage.dart';
-import 'package:vasc_pro/dev/library/device_frame.dart';
-import 'package:vasc_pro/dev/library/inspectable.dart';
+import 'package:vasc_pro/dev/library/board_view.dart';
 import 'package:vasc_pro/dev/library/library_models.dart';
+import 'package:vasc_pro/dev/library/workbench_theme.dart';
 import 'package:vasc_pro/dev/storyboard/storyboards.dart';
 
-/// The "Storyboards" section is a SINGLE tab. Selecting it shows every storyboard
-/// at once — one iPhone frame per storyboard, each labeled above with the
-/// storyboard's name, laid out in a wrapping grid so you can see them all
-/// together. Hover any component inside a frame to reveal its type name.
+/// The "Storyboards" section: one entry per [Board]. Each renders the board as a
+/// pan/zoom graph — positioned iPhone frames connected by directed arrows
+/// (branches and cycles). Drag to pan, scroll to zoom, hover a frame's
+/// components to see their names.
 LibrarySection storyboardsSection() {
-  return LibrarySection(
-    title: 'Storyboards',
-    entries: [
+  final entries = <LibraryEntry>[];
+  for (var i = 0; i < kBoards.length; i++) {
+    final index = i;
+    final board = kBoards[index];
+    entries.add(
       LibraryEntry(
-        id: 'sb-all',
-        label: 'All Screens',
-        icon: Icons.grid_view,
-        builder: _allScreens,
+        id: 'board-$index',
+        label: board.title,
+        icon: Icons.account_tree_outlined,
+        builder: (_) => _BoardCanvas(boardIndex: index),
       ),
-    ],
-  );
+    );
+  }
+  return LibrarySection(title: 'Storyboards', entries: entries);
 }
 
-Widget _allScreens(BuildContext context) {
-  // One iPhone frame per storyboard, using its first screen, labeled with the
-  // storyboard's name (shown above the frame by DeviceFrame).
-  final frames = <Widget>[
-    for (final sb in kStoryboards)
-      if (sb.frames.isNotEmpty)
-        DeviceFrame(
-          label: sb.title,
-          // This is the only place hover-inspection is enabled.
-          child: InspectScope(child: sb.frames.first.builder(context)),
-        ),
-  ];
+class _BoardCanvas extends StatelessWidget {
+  const _BoardCanvas({required this.boardIndex});
 
-  return SingleChildScrollView(
-    padding: const EdgeInsets.all(32),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  final int boardIndex;
+
+  @override
+  Widget build(BuildContext context) {
+    final board = kBoards[boardIndex];
+    return Stack(
       children: [
-        CanvasHeader(
-          title: 'Storyboards',
-          subtitle: '${frames.length} '
-              '${frames.length == 1 ? 'screen' : 'screens'} · '
-              'hover a component to see its name',
+        Positioned.fill(child: BoardView(board: board)),
+        Positioned(
+          top: 16,
+          left: 20,
+          child: IgnorePointer(
+            child: Text(
+              'drag to pan · scroll to zoom · hover a component to see its name',
+              style: Workbench.canvasSubtitle,
+            ),
+          ),
         ),
-        Wrap(spacing: 40, runSpacing: 40, children: frames),
       ],
-    ),
-  );
+    );
+  }
 }
