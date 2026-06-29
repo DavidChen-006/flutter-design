@@ -11,6 +11,7 @@ class LibraryEntry {
     required this.label,
     required this.icon,
     required this.builder,
+    this.children = const [],
   });
 
   /// Stable unique id (used as the selection key in the shell).
@@ -24,6 +25,11 @@ class LibraryEntry {
 
   /// Builds the main-canvas content when this entry is selected.
   final WidgetBuilder builder;
+
+  /// Optional nested child entries, shown indented beneath this entry in the
+  /// sidebar (Photoshop-layers style). Lets a composite component reveal the
+  /// sub-components it is built from — e.g. a nav bar expands into its buttons.
+  final List<LibraryEntry> children;
 }
 
 class LibrarySection {

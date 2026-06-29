@@ -3,6 +3,7 @@ import 'package:vasc_pro/components/app_badge.dart';
 import 'package:vasc_pro/components/app_button.dart';
 import 'package:vasc_pro/components/app_input.dart';
 import 'package:vasc_pro/components/app_radio.dart';
+import 'package:vasc_pro/components/demo_nav_bar.dart';
 import 'package:vasc_pro/components/option_card.dart';
 import 'package:vasc_pro/dev/library/canvas_stage.dart';
 import 'package:vasc_pro/dev/library/library_models.dart';
@@ -43,6 +44,35 @@ LibrarySection componentsSection() {
         label: 'Cards',
         icon: Icons.crop_square,
         builder: (_) => _cards(),
+      ),
+      // A composite component with NESTED child components — the sidebar shows
+      // "Nav Bar" expandable into the individual nav-button components it is
+      // built from.
+      LibraryEntry(
+        id: 'cmp-navbar',
+        label: 'Nav Bar',
+        icon: Icons.dock,
+        builder: (_) => _navBar(),
+        children: [
+          LibraryEntry(
+            id: 'cmp-navbar-home',
+            label: 'Nav Button · Home',
+            icon: Icons.home_outlined,
+            builder: (_) => _navButton(Icons.home_outlined, 'Home'),
+          ),
+          LibraryEntry(
+            id: 'cmp-navbar-search',
+            label: 'Nav Button · Search',
+            icon: Icons.search,
+            builder: (_) => _navButton(Icons.search, 'Search'),
+          ),
+          LibraryEntry(
+            id: 'cmp-navbar-profile',
+            label: 'Nav Button · Profile',
+            icon: Icons.person_outline,
+            builder: (_) => _navButton(Icons.person_outline, 'Profile'),
+          ),
+        ],
       ),
     ],
   );
@@ -126,5 +156,23 @@ Widget _cards() => _page(
           subtitle: 'Default resting state',
           selected: false,
         ),
+      ],
+    );
+
+Widget _navBar() => _page(
+      title: 'Nav Bar',
+      subtitle: 'A composite bar built from DemoNavButton child components.',
+      variants: const [
+        DemoNavBar(currentIndex: 0),
+      ],
+    );
+
+Widget _navButton(IconData icon, String label) => _page(
+      title: 'Nav Button · $label',
+      subtitle: 'A single DemoNavButton — the child component of the Nav Bar.',
+      variants: [
+        DemoNavButton(icon: icon, label: label, selected: true),
+        const SizedBox(height: 12),
+        DemoNavButton(icon: icon, label: label),
       ],
     );
