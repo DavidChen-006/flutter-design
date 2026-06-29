@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../design_system/app_colors.dart';
 import '../design_system/app_spacing.dart';
+import 'pressable.dart';
 
 /// A generic composite component: a bottom-style bar built from [DemoNavButton]
 /// instances. Exists to demonstrate parent→child component NESTING — the bar is
@@ -69,9 +70,8 @@ class DemoNavButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = selected ? AppColors.primary : AppColors.textSecondary;
-    return GestureDetector(
+    return Pressable(
       onTap: onTap,
-      behavior: HitTestBehavior.opaque,
       child: Container(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
