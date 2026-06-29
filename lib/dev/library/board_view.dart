@@ -3,25 +3,53 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:vasc_pro/dev/library/device_frame.dart';
 import 'package:vasc_pro/dev/library/inspectable.dart';
+import 'package:vasc_pro/dev/library/workbench_theme.dart';
 import 'package:vasc_pro/dev/storyboard/storyboard_models.dart';
 
 /// Renders a [Board] as a pan/zoom canvas. Each node becomes a positioned
 /// [DeviceFrame]; each directed [StoryEdge] is drawn as a curved arrow from the
 /// source frame to the target frame (branches and cycles included). Hover
-/// inspection is enabled inside every frame.
-class BoardView extends StatelessWidget {
+/// inspection is enabled inside every frame. Frames are draggable by their
+/// caption (Figma-style), and the edges re-anchor to the live frame rects.
+class BoardView extends StatefulWidget {
   const BoardView({super.key, required this.board});
 
   final Board board;
 
+  @override
+  State<BoardView> createState() => _BoardViewState();
+}
+
+class _BoardViewState extends State<BoardView> {
   // Footprint of one node = iPhone 15 DeviceFrame (393×852 + 10px bezel each
   // side) plus the caption row above it.
   static const double _nodeW = 413;
   static const double _nodeH = 900;
   static const double _pad = 240;
 
+  /// Live top-left positions per node id. Seeded from the board's nodes and
+  /// updated as the user drags a frame, so both the positioned frames and the
+  /// [_EdgePainter] read the same moving rects.
+  late Map<String, Offset> _positions;
+
+  @override
+  void initState() {
+    super.initState();
+    _positions = {for (final n in widget.board.nodes) n.id: n.position};
+  }
+
+  @override
+  void didUpdateWidget(BoardView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Switching boards resets the layout to the new board's seed positions.
+    if (widget.board != oldWidget.board) {
+      _positions = {for (final n in widget.board.nodes) n.id: n.position};
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final board = widget.board;
     if (board.nodes.isEmpty) return const SizedBox.shrink();
 
     var minX = double.infinity, minY = double.infinity;
@@ -39,8 +67,8 @@ class BoardView extends StatelessWidget {
     final rects = <String, Rect>{
       for (final n in board.nodes)
         n.id: Rect.fromLTWH(
-          n.position.dx + origin.dx,
-          n.position.dy + origin.dy,
+          _positions[n.id]!.dx + origin.dx,
+          _positions[n.id]!.dy + origin.dy,
           _nodeW,
           _nodeH,
         ),
@@ -64,9 +92,38 @@ class BoardView extends StatelessWidget {
               Positioned(
                 left: rects[n.id]!.left,
                 top: rects[n.id]!.top,
-                child: DeviceFrame(
-                  label: n.label,
-                  child: InspectScope(child: n.builder(context)),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // The caption is the drag handle: grab a frame by its title
+                    // to move it. Pointer deltas are already in canvas
+                    // coordinates (the InteractiveViewer transforms them), so
+                    // they're added straight to the live position.
+                    MouseRegion(
+                      cursor: SystemMouseCursors.grab,
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onPanUpdate: (d) => setState(
+                          () => _positions[n.id] = _positions[n.id]! + d.delta,
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              n.label.toUpperCase(),
+                              style: Workbench.sectionHeader.copyWith(
+                                color: Workbench.textMuted,
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+                          ],
+                        ),
+                      ),
+                    ),
+                    // The inner screen stays fully interactive (and so does its
+                    // hover-inspector) — only the caption above drags the frame.
+                    DeviceFrame(child: InspectScope(child: n.builder(context))),
+                  ],
                 ),
               ),
           ],
