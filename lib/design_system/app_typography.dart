@@ -37,37 +37,4 @@ class AppTypography {
     fontWeight: FontWeight.w400,
     color: AppColors.textSecondary,
   );
-
-  // ── Bevel home-screen styles ───────────────────────────────────────────────
-  static const TextStyle displayTitle = TextStyle(
-    fontSize: 28,
-    fontWeight: FontWeight.w700,
-    letterSpacing: -0.5,
-    color: AppColors.ink,
-  );
-
-  static const TextStyle sectionTitle = TextStyle(
-    fontSize: 22,
-    fontWeight: FontWeight.w700,
-    letterSpacing: -0.3,
-    color: AppColors.ink,
-  );
-
-  static const TextStyle cardTitle = TextStyle(
-    fontSize: 17,
-    fontWeight: FontWeight.w700,
-    color: AppColors.ink,
-  );
-
-  static const TextStyle statValue = TextStyle(
-    fontSize: 22,
-    fontWeight: FontWeight.w700,
-    color: AppColors.ink,
-  );
-
-  static const TextStyle metaGrey = TextStyle(
-    fontSize: 14,
-    fontWeight: FontWeight.w400,
-    color: AppColors.inkSecondary,
-  );
 }

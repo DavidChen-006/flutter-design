@@ -1,22 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:vasc_pro/components/account_bar.dart';
-import 'package:vasc_pro/components/alert_banner.dart';
 import 'package:vasc_pro/components/app_badge.dart';
 import 'package:vasc_pro/components/app_button.dart';
 import 'package:vasc_pro/components/app_input.dart';
 import 'package:vasc_pro/components/app_radio.dart';
-import 'package:vasc_pro/components/biomarker_card.dart';
-import 'package:vasc_pro/components/bottom_tab_bar.dart';
-import 'package:vasc_pro/components/circle_icon_button.dart';
-import 'package:vasc_pro/components/energy_bar.dart';
-import 'package:vasc_pro/components/metric_ring.dart';
 import 'package:vasc_pro/components/option_card.dart';
-import 'package:vasc_pro/components/pill_button.dart';
-import 'package:vasc_pro/components/promo_card.dart';
-import 'package:vasc_pro/components/radial_age_gauge.dart';
-import 'package:vasc_pro/components/status_pill.dart';
-import 'package:vasc_pro/components/stress_card.dart';
-import 'package:vasc_pro/design_system/app_colors.dart';
 import 'package:vasc_pro/dev/library/canvas_stage.dart';
 import 'package:vasc_pro/dev/library/library_models.dart';
 
@@ -57,80 +44,6 @@ LibrarySection componentsSection() {
         icon: Icons.crop_square,
         builder: (_) => _cards(),
       ),
-      // ── Bevel home-screen components ─────────────────────────────────────
-      LibraryEntry(
-        id: 'cmp-account-bar',
-        label: 'Account Bar',
-        icon: Icons.account_circle_outlined,
-        builder: (_) => _accountBar(),
-      ),
-      LibraryEntry(
-        id: 'cmp-status-pills',
-        label: 'Status Pills',
-        icon: Icons.run_circle_outlined,
-        builder: (_) => _statusPills(),
-      ),
-      LibraryEntry(
-        id: 'cmp-alert-banner',
-        label: 'Alert Banner',
-        icon: Icons.warning_amber_rounded,
-        builder: (_) => _alertBanner(),
-      ),
-      LibraryEntry(
-        id: 'cmp-metric-rings',
-        label: 'Metric Rings',
-        icon: Icons.donut_large,
-        builder: (_) => _metricRings(),
-      ),
-      LibraryEntry(
-        id: 'cmp-stress-card',
-        label: 'Stress Card',
-        icon: Icons.monitor_heart_outlined,
-        builder: (_) => _stressCard(),
-      ),
-      LibraryEntry(
-        id: 'cmp-energy-bar',
-        label: 'Energy Bar',
-        icon: Icons.bolt,
-        builder: (_) => _energyBar(),
-      ),
-      LibraryEntry(
-        id: 'cmp-promo-card',
-        label: 'Promo Card',
-        icon: Icons.auto_awesome,
-        builder: (_) => _promoCard(),
-      ),
-      LibraryEntry(
-        id: 'cmp-bottom-nav',
-        label: 'Bottom Nav',
-        icon: Icons.dock,
-        builder: (_) => _bottomNav(),
-      ),
-      // ── Biology screen components ────────────────────────────────────────
-      LibraryEntry(
-        id: 'cmp-circle-button',
-        label: 'Circle Icon Button',
-        icon: Icons.more_horiz,
-        builder: (_) => _circleButton(),
-      ),
-      LibraryEntry(
-        id: 'cmp-pill-button',
-        label: 'Pill Button',
-        icon: Icons.lock_outline,
-        builder: (_) => _pillButton(),
-      ),
-      LibraryEntry(
-        id: 'cmp-age-gauge',
-        label: 'Radial Age Gauge',
-        icon: Icons.speed,
-        builder: (_) => _ageGauge(),
-      ),
-      LibraryEntry(
-        id: 'cmp-biomarker',
-        label: 'Biomarker Card',
-        icon: Icons.straighten,
-        builder: (_) => _biomarker(),
-      ),
     ],
   );
 }
@@ -141,14 +54,12 @@ Widget _page({
   required String title,
   required String subtitle,
   required List<Widget> variants,
-  double width = 393,
 }) {
   return ListView(
     padding: const EdgeInsets.all(32),
     children: [
       CanvasHeader(title: title, subtitle: subtitle),
       ComponentStage(
-        width: width,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: variants,
@@ -215,151 +126,5 @@ Widget _cards() => _page(
           subtitle: 'Default resting state',
           selected: false,
         ),
-      ],
-    );
-
-// ── Bevel home-screen component showcases ────────────────────────────────────
-
-Widget _accountBar() => _page(
-      title: 'Account Bar',
-      subtitle: 'Top-right share + avatar pill.',
-      variants: const [
-        Align(
-          alignment: Alignment.centerRight,
-          child: AccountBar(initials: 'DC'),
-        ),
-      ],
-    );
-
-Widget _statusPills() => _page(
-      title: 'Status Pills',
-      subtitle: 'Tinted icon badge or plain icon, title + subtitle.',
-      variants: const [
-        StatusPill(
-          icon: Icons.directions_run,
-          iconBackground: AppColors.accentGreen,
-          iconColor: AppColors.onPrimary,
-          title: 'Active',
-          subtitle: 'Until changed',
-          showChevron: true,
-        ),
-        SizedBox(height: 12),
-        StatusPill(
-          icon: Icons.near_me_outlined,
-          title: '—°F',
-          subtitle: 'No location',
-        ),
-      ],
-    );
-
-Widget _alertBanner() => _page(
-      title: 'Alert Banner',
-      subtitle: 'Colored-border attention banner with arrow.',
-      variants: const [
-        AlertBanner(text: 'Why do I have no data?'),
-      ],
-    );
-
-Widget _metricRings() => _page(
-      title: 'Metric Rings',
-      subtitle: 'Circular progress dials in a divided card.',
-      variants: const [
-        MetricRingRow(
-          rings: [
-            MetricRing(
-              value: '0%',
-              label: 'Strain',
-              progress: 0.18,
-              color: AppColors.accentOrange,
-            ),
-            MetricRing(value: '-%', label: 'Recovery', active: false),
-            MetricRing(value: '-%', label: 'Sleep', active: false),
-          ],
-        ),
-      ],
-    );
-
-Widget _stressCard() => _page(
-      title: 'Stress Card',
-      subtitle: 'Stat row + dotted radial gauge.',
-      variants: const [
-        StressCard(
-          updated: 'Last updated at 12:22 PM',
-          highest: '—',
-          lowest: '—',
-          average: '—',
-        ),
-      ],
-    );
-
-Widget _energyBar() => _page(
-      title: 'Energy Bar',
-      subtitle: 'Segmented tick meter with bolt + percentage.',
-      variants: const [
-        EnergyBar(value: 0.01, percentLabel: '1%'),
-      ],
-    );
-
-Widget _promoCard() => _page(
-      title: 'Promo Card',
-      subtitle: 'Gradient upsell card with logo and action.',
-      variants: [
-        PromoCard(
-          title: 'Upgrade to Bevel Pro',
-          body: 'Get more out of your data with Bevel Intelligence and '
-              'understand your health better.',
-          onAction: () {},
-          onClose: () {},
-        ),
-      ],
-    );
-
-Widget _bottomNav() => _page(
-      title: 'Bottom Nav',
-      subtitle: 'Tab bar with floating add button.',
-      width: 460,
-      variants: [
-        BottomTabBar(currentIndex: 0, onTap: (_) {}, onAdd: () {}),
-      ],
-    );
-
-Widget _circleButton() => _page(
-      title: 'Circle Icon Button',
-      subtitle: 'Soft circular icon button.',
-      variants: [
-        CircleIconButton(icon: Icons.more_horiz, onTap: () {}),
-      ],
-    );
-
-Widget _pillButton() => _page(
-      title: 'Pill Button',
-      subtitle: 'Stadium pill with optional leading icon.',
-      variants: [
-        Align(
-          alignment: Alignment.centerLeft,
-          child: PillButton(
-            label: 'Unlock with Pro',
-            icon: Icons.lock_outline,
-            onTap: () {},
-          ),
-        ),
-      ],
-    );
-
-Widget _ageGauge() => _page(
-      title: 'Radial Age Gauge',
-      subtitle: 'Ticked dial with min/max labels, knob and center slot.',
-      variants: const [
-        RadialAgeGauge(value: '34.5', minLabel: '29.5', maxLabel: '39.5'),
-      ],
-    );
-
-Widget _biomarker() => _page(
-      title: 'Biomarker Card',
-      subtitle: 'Row with status, value and trend slider.',
-      variants: const [
-        BiomarkerCard(title: 'Weight', unit: 'lbs'),
-        SizedBox(height: 12),
-        BiomarkerCard(title: 'HRV Baselines', unit: 'ms'),
       ],
     );
