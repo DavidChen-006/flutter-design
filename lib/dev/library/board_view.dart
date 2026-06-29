@@ -5,12 +5,15 @@ import 'package:vasc_pro/dev/library/device_frame.dart';
 import 'package:vasc_pro/dev/library/inspectable.dart';
 import 'package:vasc_pro/dev/library/workbench_theme.dart';
 import 'package:vasc_pro/dev/storyboard/storyboard_models.dart';
+import 'package:widget_arrows/widget_arrows.dart';
 
 /// Renders a [Board] as a pan/zoom canvas. Each node becomes a positioned
-/// [DeviceFrame]; each directed [StoryEdge] is drawn as a curved arrow from the
-/// source frame to the target frame (branches and cycles included). Hover
-/// inspection is enabled inside every frame. Frames are draggable by their
-/// caption (Figma-style), and the edges re-anchor to the live frame rects.
+/// [DeviceFrame]; each directed [StoryEdge] is a real arrow OBJECT — an
+/// [ArrowElement] from the `widget_arrows` package that binds the source frame
+/// to the target frame by id and re-routes itself from their LIVE render boxes
+/// (branches and cycles included). Hover inspection is enabled inside every
+/// frame. Frames are draggable by their caption (Figma-style); because the
+/// arrows read the frames' live rects, they follow the drag at any zoom.
 class BoardView extends StatefulWidget {
   const BoardView({super.key, required this.board});
 
@@ -28,8 +31,8 @@ class _BoardViewState extends State<BoardView> {
   static const double _pad = 240;
 
   /// Live top-left positions per node id. Seeded from the board's nodes and
-  /// updated as the user drags a frame, so both the positioned frames and the
-  /// [_EdgePainter] read the same moving rects.
+  /// updated as the user drags a frame, so the positioned frames, the edge
+  /// anchor choice and the labels all read the same moving rects.
   late Map<String, Offset> _positions;
 
   /// Drives the canvas transform; lets us map pointer positions into scene
@@ -38,6 +41,10 @@ class _BoardViewState extends State<BoardView> {
 
   /// Key on the InteractiveViewer so we can resolve global→viewport→scene.
   final GlobalKey _viewportKey = GlobalKey();
+
+  /// Bumped on every drag frame so the [ArrowContainer]'s painter repaints and
+  /// the arrows re-read the moving frame render boxes mid-drag.
+  final ValueNotifier<int> _tick = ValueNotifier(0);
 
   /// While a frame handle is pressed, canvas panning is suspended so the drag
   /// moves the frame instead of the whole graph (resolves the gesture arena vs.
@@ -66,6 +73,7 @@ class _BoardViewState extends State<BoardView> {
   @override
   void dispose() {
     _transform.dispose();
+    _tick.dispose();
     super.dispose();
   }
 
@@ -108,6 +116,14 @@ class _BoardViewState extends State<BoardView> {
         ),
     };
 
+    // Outgoing edges per source node, so each frame can be wrapped in one
+    // ArrowElement per edge it originates.
+    final outgoing = <String, List<StoryEdge>>{};
+    for (final e in board.edges) {
+      if (rects[e.from] == null || rects[e.to] == null) continue;
+      (outgoing[e.from] ??= []).add(e);
+    }
+
     return InteractiveViewer(
       key: _viewportKey,
       transformationController: _transform,
@@ -120,60 +136,142 @@ class _BoardViewState extends State<BoardView> {
         width: canvasW,
         height: canvasH,
         child: Stack(
-          // Don't clip frames dragged beyond the seed canvas bounds.
+          // Don't clip frames/labels dragged beyond the seed canvas bounds.
           clipBehavior: Clip.none,
           children: [
-            Positioned.fill(child: ColoredBox(color: board.style.background)),
-            Positioned.fill(
-              child: CustomPaint(painter: _EdgePainter(board, rects)),
-            ),
-            for (final n in board.nodes)
-              Positioned(
-                left: rects[n.id]!.left,
-                top: rects[n.id]!.top,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Drag handle: grab a frame by this bar to move it. A
-                    // Listener suspends canvas panning the instant the handle is
-                    // pressed, so this drag wins over InteractiveViewer; the
-                    // motion is mapped through the transform so the frame tracks
-                    // the cursor at any zoom.
-                    Listener(
-                      onPointerDown: (_) => _setPan(false),
-                      onPointerUp: (_) => _setPan(true),
-                      onPointerCancel: (_) => _setPan(true),
-                      child: MouseRegion(
-                        cursor: SystemMouseCursors.grab,
-                        child: GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onPanStart: (d) {
-                            _dragStartScene = _toScene(d.globalPosition);
-                            _dragStartPos = _positions[n.id]!;
-                          },
-                          onPanUpdate: (d) {
-                            final scene = _toScene(d.globalPosition);
-                            setState(() {
-                              _positions[n.id] =
-                                  _dragStartPos + (scene - _dragStartScene);
-                            });
-                          },
-                          onPanEnd: (_) => _setPan(true),
-                          child: _DragHandle(label: n.label),
-                        ),
+            // The arrow layer: ArrowContainer paints every edge's ArrowElement
+            // on top of the frames it owns, re-reading their live render boxes.
+            ArrowContainer(
+              listenables: [_tick],
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Positioned.fill(
+                    child: ColoredBox(color: board.style.background),
+                  ),
+                  for (final n in board.nodes)
+                    Positioned(
+                      left: rects[n.id]!.left,
+                      top: rects[n.id]!.top,
+                      child: _wrapFrame(
+                        node: n,
+                        edges: outgoing[n.id] ?? const [],
+                        rects: rects,
+                        style: board.style,
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    // The inner screen stays fully interactive (taps, scroll,
-                    // hover-inspector) — only the handle above drags the frame.
-                    DeviceFrame(child: InspectScope(child: n.builder(context))),
-                  ],
-                ),
+                ],
               ),
+            ),
+            // Edge labels sit ABOVE the arrows so the chip masks the line it
+            // annotates; positioned at the midpoint of the two live frames.
+            for (final e in board.edges)
+              if (e.label != null &&
+                  rects[e.from] != null &&
+                  rects[e.to] != null)
+                Positioned(
+                  left: (rects[e.from]!.center.dx + rects[e.to]!.center.dx) / 2,
+                  top: (rects[e.from]!.center.dy + rects[e.to]!.center.dy) / 2,
+                  child: FractionalTranslation(
+                    translation: const Offset(-0.5, -0.5),
+                    child: _EdgeLabel(text: e.label!, style: board.style),
+                  ),
+                ),
           ],
         ),
       ),
     );
+  }
+
+  /// Wraps a node's frame in its anchor [ArrowElement] (id = node id, the target
+  /// for incoming edges) plus one source [ArrowElement] per outgoing edge. All
+  /// share the frame's render box, so each edge anchors to the live frame; the
+  /// anchors are picked from the current rects so arrows leave/enter the side
+  /// facing the other frame.
+  Widget _wrapFrame({
+    required StoryNode node,
+    required List<StoryEdge> edges,
+    required Map<String, Rect> rects,
+    required BoardStyle style,
+  }) {
+    Widget current = ArrowElement(id: node.id, child: _frame(node));
+    for (var i = 0; i < edges.length; i++) {
+      final e = edges[i];
+      final (sourceAnchor, targetAnchor) = _anchors(
+        rects[e.from]!.center,
+        rects[e.to]!.center,
+      );
+      current = ArrowElement(
+        id: '${node.id}__out_$i',
+        targetId: e.to,
+        sourceAnchor: sourceAnchor,
+        targetAnchor: targetAnchor,
+        color: style.arrowColor,
+        width: style.arrowWidth,
+        tipLength: 14,
+        tipAngleOutwards: 0.5,
+        child: current,
+      );
+    }
+    return current;
+  }
+
+  /// The node's frame: a drag handle above a fully-interactive device frame.
+  Widget _frame(StoryNode node) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Drag handle: grab a frame by this bar to move it. A Listener suspends
+        // canvas panning the instant the handle is pressed, so this drag wins
+        // over InteractiveViewer; the motion is mapped through the transform so
+        // the frame tracks the cursor at any zoom, and each drag frame ticks the
+        // arrow painter so the edges follow live.
+        Listener(
+          onPointerDown: (_) => _setPan(false),
+          onPointerUp: (_) => _setPan(true),
+          onPointerCancel: (_) => _setPan(true),
+          child: MouseRegion(
+            cursor: SystemMouseCursors.grab,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onPanStart: (d) {
+                _dragStartScene = _toScene(d.globalPosition);
+                _dragStartPos = _positions[node.id]!;
+              },
+              onPanUpdate: (d) {
+                final scene = _toScene(d.globalPosition);
+                setState(() {
+                  _positions[node.id] =
+                      _dragStartPos + (scene - _dragStartScene);
+                  _tick.value++;
+                });
+              },
+              onPanEnd: (_) => _setPan(true),
+              child: _DragHandle(label: node.label),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        // The inner screen stays fully interactive (taps, scroll,
+        // hover-inspector) — only the handle above drags the frame.
+        DeviceFrame(child: InspectScope(child: node.builder(context))),
+      ],
+    );
+  }
+
+  /// Picks the (source, target) border anchors for an edge from the dominant
+  /// axis between the two frame centers, so the arrow leaves/enters the facing
+  /// side rather than a fixed corner. Recomputed each build → adapts to drags.
+  (Alignment, Alignment) _anchors(Offset from, Offset to) {
+    final d = to - from;
+    if (d.dx.abs() >= d.dy.abs()) {
+      return d.dx >= 0
+          ? (Alignment.centerRight, Alignment.centerLeft)
+          : (Alignment.centerLeft, Alignment.centerRight);
+    }
+    return d.dy >= 0
+        ? (Alignment.bottomCenter, Alignment.topCenter)
+        : (Alignment.topCenter, Alignment.bottomCenter);
   }
 }
 
@@ -207,101 +305,31 @@ class _DragHandle extends StatelessWidget {
   }
 }
 
-/// Draws a curved directed arrow per edge, anchored to the borders of the
-/// source/target frame rects so the lines meet the frames cleanly.
-class _EdgePainter extends CustomPainter {
-  _EdgePainter(this.board, this.rects);
+/// A small chip annotating an edge with the action that triggers the
+/// transition, drawn over the arrow at its midpoint.
+class _EdgeLabel extends StatelessWidget {
+  const _EdgeLabel({required this.text, required this.style});
 
-  final Board board;
-  final Map<String, Rect> rects;
+  final String text;
+  final BoardStyle style;
 
   @override
-  void paint(Canvas canvas, Size size) {
-    final stroke = Paint()
-      ..color = board.style.arrowColor
-      ..strokeWidth = board.style.arrowWidth
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-    final fill = Paint()
-      ..color = board.style.arrowColor
-      ..style = PaintingStyle.fill;
-
-    for (final e in board.edges) {
-      final a = rects[e.from];
-      final b = rects[e.to];
-      if (a == null || b == null) continue;
-
-      final start = _border(a, b.center);
-      final end = _border(b, a.center);
-      final dx = (end.dx - start.dx) * 0.5;
-      final c1 = Offset(start.dx + dx, start.dy);
-      final c2 = Offset(end.dx - dx, end.dy);
-
-      canvas.drawPath(
-        Path()
-          ..moveTo(start.dx, start.dy)
-          ..cubicTo(c1.dx, c1.dy, c2.dx, c2.dy, end.dx, end.dy),
-        stroke,
-      );
-      _arrowHead(canvas, end, c2, fill);
-      if (e.label != null) _label(canvas, e.label!, (start + end) / 2);
-    }
-  }
-
-  /// Point on rect [r]'s border in the direction of [toward].
-  Offset _border(Rect r, Offset toward) {
-    final c = r.center;
-    final dir = toward - c;
-    if (dir.dx == 0 && dir.dy == 0) return c;
-    final ax = dir.dx.abs(), ay = dir.dy.abs();
-    final sx = ax > 1e-6 ? (r.width / 2) / ax : double.infinity;
-    final sy = ay > 1e-6 ? (r.height / 2) / ay : double.infinity;
-    return c + dir * math.min(sx, sy);
-  }
-
-  void _arrowHead(Canvas canvas, Offset tip, Offset from, Paint fill) {
-    final dir = tip - from;
-    final angle = math.atan2(dir.dy, dir.dx);
-    const len = 16.0, spread = 0.5;
-    final p1 =
-        tip - Offset(math.cos(angle - spread), math.sin(angle - spread)) * len;
-    final p2 =
-        tip - Offset(math.cos(angle + spread), math.sin(angle + spread)) * len;
-    canvas.drawPath(
-      Path()
-        ..moveTo(tip.dx, tip.dy)
-        ..lineTo(p1.dx, p1.dy)
-        ..lineTo(p2.dx, p2.dy)
-        ..close,
-      fill,
-    );
-  }
-
-  void _label(Canvas canvas, String text, Offset at) {
-    final tp = TextPainter(
-      text: TextSpan(
-        text: text.toUpperCase(),
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+      decoration: BoxDecoration(
+        color: style.background,
+        borderRadius: BorderRadius.circular(5),
+      ),
+      child: Text(
+        text.toUpperCase(),
         style: TextStyle(
-          color: board.style.arrowColor,
+          color: style.arrowColor,
           fontSize: 15,
           letterSpacing: 1.2,
           fontFamilyFallback: const ['Menlo', 'SFMono-Regular', 'monospace'],
         ),
       ),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    final rect = Rect.fromCenter(
-      center: at,
-      width: tp.width + 18,
-      height: tp.height + 10,
     );
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(rect, const Radius.circular(5)),
-      Paint()..color = board.style.background,
-    );
-    tp.paint(canvas, at - Offset(tp.width / 2, tp.height / 2));
   }
-
-  @override
-  bool shouldRepaint(covariant _EdgePainter old) => true;
 }
