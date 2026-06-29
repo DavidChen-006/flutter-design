@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../features/home/home_screen.dart';
 import '../../features/welcome/welcome_screen.dart';
 import 'storyboard_models.dart';
 
@@ -16,6 +17,12 @@ import 'storyboard_models.dart';
 ///   3. It now appears in the Storyboard tab AND reuses the exact production code.
 const List<Storyboard> kStoryboards = [
   Storyboard(
+    title: 'Home Screen',
+    frames: [
+      Frame(label: 'Home', builder: _home),
+    ],
+  ),
+  Storyboard(
     title: 'Example flow',
     frames: [
       Frame(label: 'Welcome', builder: _welcome),
@@ -27,5 +34,6 @@ const List<Storyboard> kStoryboards = [
   // Add more storyboards (paths) here, e.g. Storyboard(title: 'Settings', ...).
 ];
 
-// A top-level function keeps the registry `const` (closures/tear-offs aren't const).
+// Top-level functions keep the registry `const` (closures/tear-offs aren't const).
+HomeScreen _home(BuildContext context) => const HomeScreen();
 WelcomeScreen _welcome(BuildContext context) => const WelcomeScreen();

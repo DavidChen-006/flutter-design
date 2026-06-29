@@ -3,6 +3,7 @@ import '../../components/app_button.dart';
 import '../../components/option_card.dart';
 import '../../design_system/app_spacing.dart';
 import '../../design_system/app_typography.dart';
+import '../../dev/library/inspectable.dart';
 
 /// LAYER 3 — A real production screen, composed only from LAYER 2 primitives.
 ///
@@ -33,21 +34,25 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             Text('Choose how you want to get started.',
                 style: AppTypography.caption),
             const SizedBox(height: AppSpacing.lg),
-            OptionCard(
-              title: 'Create an account',
-              subtitle: 'Set up a new profile',
-              selected: _selected == 0,
-              onTap: () => setState(() => _selected = 0),
+            Inspectable(
+              OptionCard(
+                title: 'Create an account',
+                subtitle: 'Set up a new profile',
+                selected: _selected == 0,
+                onTap: () => setState(() => _selected = 0),
+              ),
             ),
             const SizedBox(height: AppSpacing.md),
-            OptionCard(
-              title: 'Sign in',
-              subtitle: 'Continue with an existing account',
-              selected: _selected == 1,
-              onTap: () => setState(() => _selected = 1),
+            Inspectable(
+              OptionCard(
+                title: 'Sign in',
+                subtitle: 'Continue with an existing account',
+                selected: _selected == 1,
+                onTap: () => setState(() => _selected = 1),
+              ),
             ),
             const Spacer(),
-            AppButton(label: 'Continue', onPressed: () {}),
+            Inspectable(AppButton(label: 'Continue', onPressed: () {})),
           ],
         ),
       ),

@@ -21,4 +21,18 @@ class AppColors {
 
   static const Color success = Color(0xFF16A34A);
   static const Color danger = Color(0xFFDC2626);
+
+  // ── Bevel home-screen palette (neumorphic light health dashboard) ──────────
+  static const Color canvas = Color(0xFFECECEE); // app background (cool grey)
+  static const Color card = Color(0xFFFFFFFF); // white cards
+  static const Color cardAlt = Color(0xFFF5F5F7); // inset / track surfaces
+
+  static const Color ink = Color(0xFF1A1A1C); // primary text
+  static const Color inkSecondary = Color(0xFF8A8A8E); // secondary grey
+  static const Color inkTertiary = Color(0xFFB6B6BB); // faint grey / placeholders
+  static const Color hairline = Color(0xFFE6E6E9); // dividers / ring tracks
+
+  static const Color accentOrange = Color(0xFFF2994A); // warnings, energy, strain
+  static const Color accentGreen = Color(0xFF5BD08A); // active / live status
+  static const Color avatarBlue = Color(0xFFBFD7EA); // avatar chip fill
 }
