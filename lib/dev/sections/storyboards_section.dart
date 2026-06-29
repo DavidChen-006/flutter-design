@@ -5,53 +5,50 @@ import 'package:vasc_pro/dev/library/inspectable.dart';
 import 'package:vasc_pro/dev/library/library_models.dart';
 import 'package:vasc_pro/dev/storyboard/storyboards.dart';
 
-/// Builds the "Storyboards" section: one entry per storyboard in [kStoryboards],
-/// each rendered as a horizontal row of side-by-side iPhone device frames (one
-/// frame per step in the flow). The storyboard data is the single source of
-/// truth — frames render their real screens in the user's own theme.
+/// The "Storyboards" section is a SINGLE tab. Selecting it shows every storyboard
+/// at once — one iPhone frame per storyboard, each labeled above with the
+/// storyboard's name, laid out in a wrapping grid so you can see them all
+/// together. Hover any component inside a frame to reveal its type name.
 LibrarySection storyboardsSection() {
-  final entries = <LibraryEntry>[];
-  for (var i = 0; i < kStoryboards.length; i++) {
-    final sb = kStoryboards[i];
-    entries.add(
+  return LibrarySection(
+    title: 'Storyboards',
+    entries: [
       LibraryEntry(
-        id: 'sb-$i',
-        label: sb.title,
-        icon: Icons.dashboard_outlined,
-        builder: (context) {
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(32),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CanvasHeader(
-                  title: sb.title,
-                  subtitle: '${sb.frames.length} '
-                      '${sb.frames.length == 1 ? 'frame' : 'frames'}',
-                ),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      for (final frame in sb.frames) ...[
-                        DeviceFrame(
-                          label: frame.label,
-                          // Only here is hover-inspection enabled.
-                          child: InspectScope(child: frame.builder(context)),
-                        ),
-                        const SizedBox(width: 32),
-                      ],
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
+        id: 'sb-all',
+        label: 'All Screens',
+        icon: Icons.grid_view,
+        builder: _allScreens,
       ),
-    );
-  }
+    ],
+  );
+}
 
-  return LibrarySection(title: 'Storyboards', entries: entries);
+Widget _allScreens(BuildContext context) {
+  // One iPhone frame per storyboard, using its first screen, labeled with the
+  // storyboard's name (shown above the frame by DeviceFrame).
+  final frames = <Widget>[
+    for (final sb in kStoryboards)
+      if (sb.frames.isNotEmpty)
+        DeviceFrame(
+          label: sb.title,
+          // This is the only place hover-inspection is enabled.
+          child: InspectScope(child: sb.frames.first.builder(context)),
+        ),
+  ];
+
+  return SingleChildScrollView(
+    padding: const EdgeInsets.all(32),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CanvasHeader(
+          title: 'Storyboards',
+          subtitle: '${frames.length} '
+              '${frames.length == 1 ? 'screen' : 'screens'} · '
+              'hover a component to see its name',
+        ),
+        Wrap(spacing: 40, runSpacing: 40, children: frames),
+      ],
+    ),
+  );
 }
