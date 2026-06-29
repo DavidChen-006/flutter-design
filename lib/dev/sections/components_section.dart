@@ -5,11 +5,15 @@ import 'package:vasc_pro/components/app_badge.dart';
 import 'package:vasc_pro/components/app_button.dart';
 import 'package:vasc_pro/components/app_input.dart';
 import 'package:vasc_pro/components/app_radio.dart';
+import 'package:vasc_pro/components/biomarker_card.dart';
 import 'package:vasc_pro/components/bottom_tab_bar.dart';
+import 'package:vasc_pro/components/circle_icon_button.dart';
 import 'package:vasc_pro/components/energy_bar.dart';
 import 'package:vasc_pro/components/metric_ring.dart';
 import 'package:vasc_pro/components/option_card.dart';
+import 'package:vasc_pro/components/pill_button.dart';
 import 'package:vasc_pro/components/promo_card.dart';
+import 'package:vasc_pro/components/radial_age_gauge.dart';
 import 'package:vasc_pro/components/status_pill.dart';
 import 'package:vasc_pro/components/stress_card.dart';
 import 'package:vasc_pro/design_system/app_colors.dart';
@@ -101,6 +105,31 @@ LibrarySection componentsSection() {
         label: 'Bottom Nav',
         icon: Icons.dock,
         builder: (_) => _bottomNav(),
+      ),
+      // ── Biology screen components ────────────────────────────────────────
+      LibraryEntry(
+        id: 'cmp-circle-button',
+        label: 'Circle Icon Button',
+        icon: Icons.more_horiz,
+        builder: (_) => _circleButton(),
+      ),
+      LibraryEntry(
+        id: 'cmp-pill-button',
+        label: 'Pill Button',
+        icon: Icons.lock_outline,
+        builder: (_) => _pillButton(),
+      ),
+      LibraryEntry(
+        id: 'cmp-age-gauge',
+        label: 'Radial Age Gauge',
+        icon: Icons.speed,
+        builder: (_) => _ageGauge(),
+      ),
+      LibraryEntry(
+        id: 'cmp-biomarker',
+        label: 'Biomarker Card',
+        icon: Icons.straighten,
+        builder: (_) => _biomarker(),
       ),
     ],
   );
@@ -291,5 +320,46 @@ Widget _bottomNav() => _page(
       width: 460,
       variants: [
         BottomTabBar(currentIndex: 0, onTap: (_) {}, onAdd: () {}),
+      ],
+    );
+
+Widget _circleButton() => _page(
+      title: 'Circle Icon Button',
+      subtitle: 'Soft circular icon button.',
+      variants: [
+        CircleIconButton(icon: Icons.more_horiz, onTap: () {}),
+      ],
+    );
+
+Widget _pillButton() => _page(
+      title: 'Pill Button',
+      subtitle: 'Stadium pill with optional leading icon.',
+      variants: [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: PillButton(
+            label: 'Unlock with Pro',
+            icon: Icons.lock_outline,
+            onTap: () {},
+          ),
+        ),
+      ],
+    );
+
+Widget _ageGauge() => _page(
+      title: 'Radial Age Gauge',
+      subtitle: 'Ticked dial with min/max labels, knob and center slot.',
+      variants: const [
+        RadialAgeGauge(value: '34.5', minLabel: '29.5', maxLabel: '39.5'),
+      ],
+    );
+
+Widget _biomarker() => _page(
+      title: 'Biomarker Card',
+      subtitle: 'Row with status, value and trend slider.',
+      variants: const [
+        BiomarkerCard(title: 'Weight', unit: 'lbs'),
+        SizedBox(height: 12),
+        BiomarkerCard(title: 'HRV Baselines', unit: 'ms'),
       ],
     );

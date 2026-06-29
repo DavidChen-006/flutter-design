@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../features/biology/biology_screen.dart';
 import '../../features/home/home_screen.dart';
 import '../../features/welcome/welcome_screen.dart';
 import 'storyboard_models.dart';
@@ -23,6 +24,12 @@ const List<Storyboard> kStoryboards = [
     ],
   ),
   Storyboard(
+    title: 'Biology',
+    frames: [
+      Frame(label: 'Biology', builder: _biology),
+    ],
+  ),
+  Storyboard(
     title: 'Example flow',
     frames: [
       Frame(label: 'Welcome', builder: _welcome),
@@ -36,4 +43,5 @@ const List<Storyboard> kStoryboards = [
 
 // Top-level functions keep the registry `const` (closures/tear-offs aren't const).
 HomeScreen _home(BuildContext context) => const HomeScreen();
+BiologyScreen _biology(BuildContext context) => const BiologyScreen();
 WelcomeScreen _welcome(BuildContext context) => const WelcomeScreen();
