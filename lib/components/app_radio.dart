@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../design_system/app_colors.dart';
 import '../design_system/app_spacing.dart';
 import '../design_system/app_typography.dart';
+import 'pressable.dart';
 
 /// LAYER 2 — Primitive: selection (radio).
 ///
@@ -21,8 +22,7 @@ class AppRadio extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+    return Pressable(
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),

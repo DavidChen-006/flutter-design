@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../design_system/app_colors.dart';
 import '../design_system/app_spacing.dart';
 import '../design_system/app_typography.dart';
+import 'pressable.dart';
 
 /// LAYER 2 — Primitive: button.
 ///
@@ -28,29 +29,25 @@ class AppButton extends StatelessWidget {
 
     return SizedBox(
       width: double.infinity,
-      child: Material(
-        color: isGhost ? Colors.transparent : AppColors.primary,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-          onTap: onPressed,
-          child: Container(
-            padding: const EdgeInsets.symmetric(
-              vertical: AppSpacing.md,
-              horizontal: AppSpacing.lg,
-            ),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-              border: isGhost
-                  ? Border.all(color: AppColors.primary, width: 1.5)
-                  : null,
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              label,
-              style: AppTypography.label.copyWith(
-                color: isGhost ? AppColors.primary : AppColors.onPrimary,
-              ),
+      child: Pressable(
+        onTap: onPressed,
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            vertical: AppSpacing.md,
+            horizontal: AppSpacing.lg,
+          ),
+          decoration: BoxDecoration(
+            color: isGhost ? Colors.transparent : AppColors.primary,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+            border: isGhost
+                ? Border.all(color: AppColors.primary, width: 1.5)
+                : null,
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            label,
+            style: AppTypography.label.copyWith(
+              color: isGhost ? AppColors.primary : AppColors.onPrimary,
             ),
           ),
         ),

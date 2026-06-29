@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../design_system/app_colors.dart';
 import '../design_system/app_spacing.dart';
 import '../design_system/app_typography.dart';
+import 'pressable.dart';
 
 /// LAYER 2 — Composite primitive: option card.
 ///
@@ -23,8 +24,7 @@ class OptionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+    return Pressable(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
