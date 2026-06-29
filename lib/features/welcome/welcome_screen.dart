@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../components/app_button.dart';
 import '../../components/option_card.dart';
+import '../../content/app_content.dart';
 import '../../design_system/app_spacing.dart';
 import '../../design_system/app_typography.dart';
 import '../../dev/library/inspectable.dart';
@@ -29,15 +30,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: AppSpacing.lg),
-            Text('Welcome', style: AppTypography.title),
+            Text(AppContent.welcome.title, style: AppTypography.title),
             const SizedBox(height: AppSpacing.sm),
-            Text('Choose how you want to get started.',
-                style: AppTypography.caption),
+            Text(AppContent.welcome.subtitle, style: AppTypography.caption),
             const SizedBox(height: AppSpacing.lg),
             Inspectable(
               OptionCard(
-                title: 'Create an account',
-                subtitle: 'Set up a new profile',
+                title: AppContent.welcome.createAccountTitle,
+                subtitle: AppContent.welcome.createAccountSubtitle,
                 selected: _selected == 0,
                 onTap: () => setState(() => _selected = 0),
               ),
@@ -45,14 +45,15 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             const SizedBox(height: AppSpacing.md),
             Inspectable(
               OptionCard(
-                title: 'Sign in',
-                subtitle: 'Continue with an existing account',
+                title: AppContent.welcome.signInTitle,
+                subtitle: AppContent.welcome.signInSubtitle,
                 selected: _selected == 1,
                 onTap: () => setState(() => _selected = 1),
               ),
             ),
             const Spacer(),
-            Inspectable(AppButton(label: 'Continue', onPressed: () {})),
+            Inspectable(
+                AppButton(label: AppContent.welcome.continueLabel, onPressed: () {})),
           ],
         ),
       ),

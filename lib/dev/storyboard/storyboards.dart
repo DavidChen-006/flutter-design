@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import '../../content/app_content.dart';
 import '../../features/_demo/placeholder_screen.dart';
 import '../../features/welcome/welcome_screen.dart';
 import 'storyboard_models.dart';
@@ -24,40 +25,48 @@ import 'storyboard_models.dart';
 ///
 /// The board below is a PLACEHOLDER flow. Replace these demo frames with your
 /// app's real screens — keep them all in this one board — and rewire the arrows.
-const List<Board> kBoards = [
+// Frame captions and edge labels are sourced from the content layer
+// (`lib/content/`) — the single source of truth for copy — so the registry is
+// `final`, not `const`.
+final List<Board> kBoards = [
   Board(
     title: 'App Flow',
     nodes: [
       StoryNode(
         id: 'start',
-        label: 'Welcome',
+        label: AppContent.demoBoard.welcomeLabel,
         builder: _welcome,
-        position: Offset(0, 0),
+        position: const Offset(0, 0),
       ),
       StoryNode(
         id: 'a',
-        label: 'Branch A',
+        label: AppContent.demoBoard.branchAName,
         builder: _branchA,
-        position: Offset(640, -380),
+        position: const Offset(640, -380),
       ),
       StoryNode(
         id: 'b',
-        label: 'Branch B',
+        label: AppContent.demoBoard.branchBName,
         builder: _branchB,
-        position: Offset(640, 380),
+        position: const Offset(640, 380),
       ),
     ],
     edges: [
-      StoryEdge(from: 'start', to: 'a', label: 'Sign up'),
-      StoryEdge(from: 'start', to: 'b', label: 'Sign in'),
-      StoryEdge(from: 'b', to: 'start', label: 'Back'), // cycle
+      StoryEdge(from: 'start', to: 'a', label: AppContent.demoBoard.branchAEdge),
+      StoryEdge(from: 'start', to: 'b', label: AppContent.demoBoard.branchBEdge),
+      StoryEdge(from: 'b', to: 'start', label: AppContent.demoBoard.backEdge), // cycle
     ],
   ),
 ];
 
-// Top-level functions keep the registry `const` (closures/tear-offs aren't const).
+// Top-level builder functions keep the screen builders tidy and reusable across
+// boards. The placeholder frames read their copy from the content layer.
 WelcomeScreen _welcome(BuildContext context) => const WelcomeScreen();
-PlaceholderScreen _branchA(BuildContext context) =>
-    const PlaceholderScreen(title: 'Branch A', subtitle: 'Sign up path');
-PlaceholderScreen _branchB(BuildContext context) =>
-    const PlaceholderScreen(title: 'Branch B', subtitle: 'Sign in path');
+PlaceholderScreen _branchA(BuildContext context) => PlaceholderScreen(
+      title: AppContent.demoBoard.branchAName,
+      subtitle: AppContent.demoBoard.branchASubtitle,
+    );
+PlaceholderScreen _branchB(BuildContext context) => PlaceholderScreen(
+      title: AppContent.demoBoard.branchBName,
+      subtitle: AppContent.demoBoard.branchBSubtitle,
+    );

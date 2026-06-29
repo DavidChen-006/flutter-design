@@ -117,25 +117,59 @@ and this hover-inspection is enabled ONLY inside the Storyboards section.
 
 ## 5. Single source of truth
 
-`screens → components (lib/components) → design tokens (lib/design_system)`.
+`storyboards → screens → components (style ← lib/design_system) + copy (← lib/content)`.
 Storyboards and the App walker render the SAME screen objects, so every frame is
-a live instance of the defined components. Edit a component or token once and it
-changes everywhere it is used. Keep it that way: never fork a component's code
-into a screen.
+a live instance of the defined components. A screen reads its **style** from the
+design tokens (`lib/design_system/`) and its **copy** from the content layer
+(`lib/content/`). Edit a token, a component, or a string once and it changes
+everywhere it is used. Keep it that way: never fork a component's code into a
+screen, and never hardcode copy into a screen (see §6).
 
-## 6. How to use
+## 6. Content is a single source of truth
+
+`lib/content/` is the single source of truth for the app's user-facing **copy**
+(text, labels, data) — exactly as `lib/design_system/` is for style. Copy is
+plain Dart const objects (NO json / i18n / localization framework), grouped by
+screen/feature, with the same shape as the design tokens. A screen reads its
+text from there:
+
+```dart
+Text(AppContent.welcome.title, style: AppTypography.title);
+```
+
+Rules:
+
+- **NEVER hardcode copy in a screen.** No user-facing string literals in
+  `lib/features/**`; add the string to a content class and reference it.
+- **One content class per screen/feature**, exposed as a `const` instance on
+  `AppContent` (e.g. `AppContent.welcome`) with `final String` fields. Mirror
+  `lib/design_system/`: add a `lib/content/<feature>_content.dart`, then expose
+  it on `AppContent` in `lib/content/app_content.dart`.
+- **Components stay generic — copy is a PARAMETER, never baked in.** A component
+  takes its text via constructor args (`OptionCard(title: ...)`); the screen
+  passes the value from `lib/content/`. Baking copy into a component would stop
+  it being reusable N times for N different things.
+- **Change once → reflects everywhere.** Editing a string in `lib/content/`
+  updates the live app AND every storyboard frame, because storyboards render
+  the same screens.
+
+## 7. How to use
 
 - **Add a component** — create `lib/components/<name>.dart` (token-driven, tap
   target wrapped in `Pressable`); register it in `components_section.dart`; if it
   is composite, extract its interactive children as their own components and list
   them under `children`.
 - **Add a screen** — create `lib/features/<flow>/<screen>.dart`, composed only
-  from `lib/components/`.
+  from `lib/components/`, reading style from `lib/design_system/` and copy from
+  `lib/content/` (never hardcode strings — see §6).
+- **Add copy** — add a `final String` to the screen's content class in
+  `lib/content/` (create `<feature>_content.dart` and expose it on `AppContent`
+  for a new screen), then reference it as `AppContent.<feature>.<field>`.
 - **Add / shape a board** — edit `kBoards` in `storyboards.dart`: add
   `StoryNode`s with positions and connect them with `StoryEdge`s. Ask the user
   for the flow.
 
-## 7. Keep the base generic
+## 8. Keep the base generic
 
 This is the shared base scaffold. Do not commit app-specific screens, components,
 or palettes here — those belong in the app repo that inherits this one. Only
