@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:vasc_pro/components/app_badge.dart';
-import 'package:vasc_pro/components/app_button.dart';
-import 'package:vasc_pro/components/app_input.dart';
-import 'package:vasc_pro/components/app_radio.dart';
-import 'package:vasc_pro/components/demo_nav_bar.dart';
-import 'package:vasc_pro/components/option_card.dart';
-import 'package:vasc_pro/dev/library/canvas_stage.dart';
-import 'package:vasc_pro/dev/library/library_models.dart';
+import 'package:flutter_design/components/app_badge.dart';
+import 'package:flutter_design/components/app_button.dart';
+import 'package:flutter_design/components/app_input.dart';
+import 'package:flutter_design/components/app_radio.dart';
+import 'package:flutter_design/components/demo_nav_bar.dart';
+import 'package:flutter_design/components/option_card.dart';
+import 'package:flutter_design/dev/library/canvas_stage.dart';
+import 'package:flutter_design/dev/library/library_models.dart';
 
 /// The "Components" section registry: one [LibraryEntry] per user component,
 /// each showing that component's variants on a light [ComponentStage] so the

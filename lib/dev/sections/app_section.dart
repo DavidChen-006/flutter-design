@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:vasc_pro/dev/library/canvas_stage.dart';
-import 'package:vasc_pro/dev/library/device_frame.dart';
-import 'package:vasc_pro/dev/library/library_models.dart';
-import 'package:vasc_pro/dev/library/workbench_theme.dart';
-import 'package:vasc_pro/dev/storyboard/storyboard_models.dart';
-import 'package:vasc_pro/dev/storyboard/storyboards.dart';
+import 'package:flutter_design/dev/library/canvas_stage.dart';
+import 'package:flutter_design/dev/library/device_frame.dart';
+import 'package:flutter_design/dev/library/library_models.dart';
+import 'package:flutter_design/dev/library/workbench_theme.dart';
+import 'package:flutter_design/dev/storyboard/storyboard_models.dart';
+import 'package:flutter_design/dev/storyboard/storyboards.dart';
 
 /// The "App" section walks a [Board]'s graph interactively in ONE iPhone frame:
 /// start at the root node, then follow a button per outgoing edge (branches).

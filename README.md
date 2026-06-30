@@ -1,4 +1,4 @@
-# figma-scaffold
+# flutter-design
 
 A reusable **Flutter design-system workbench** — a sidebar + canvas workbench for
 building an app's UI in isolation, wiring its screens into a navigable storyboard,
@@ -6,7 +6,7 @@ and walking the real flow. Copy it to start a new app; the scaffold carries the
 conventions with it.
 
 ```bash
-npx degit DavidChen-006/figma-scaffold my-app && cd my-app
+npx degit DavidChen-006/flutter-design my-app && cd my-app
 make setup
 make run
 ```
@@ -18,7 +18,7 @@ make run
 **1. Load the scaffold** (a clean copy, no git history):
 
 ```bash
-npx degit DavidChen-006/figma-scaffold my-app
+npx degit DavidChen-006/flutter-design my-app
 cd my-app
 ```
 

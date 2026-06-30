@@ -1,4 +1,4 @@
-package com.vascpro.vasc_pro
+package com.flutterdesign.flutter_design
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.vascpro" "\0"
-            VALUE "FileDescription", "vasc_pro" "\0"
+            VALUE "CompanyName", "com.flutterdesign" "\0"
+            VALUE "FileDescription", "flutter_design" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "vasc_pro" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.vascpro. All rights reserved." "\0"
-            VALUE "OriginalFilename", "vasc_pro.exe" "\0"
-            VALUE "ProductName", "vasc_pro" "\0"
+            VALUE "InternalName", "flutter_design" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 com.flutterdesign. All rights reserved." "\0"
+            VALUE "OriginalFilename", "flutter_design.exe" "\0"
+            VALUE "ProductName", "flutter_design" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

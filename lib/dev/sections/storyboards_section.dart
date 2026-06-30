@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:vasc_pro/dev/library/board_view.dart';
-import 'package:vasc_pro/dev/library/library_models.dart';
-import 'package:vasc_pro/dev/library/workbench_theme.dart';
-import 'package:vasc_pro/dev/storyboard/storyboards.dart';
+import 'package:flutter_design/dev/library/board_view.dart';
+import 'package:flutter_design/dev/library/library_models.dart';
+import 'package:flutter_design/dev/library/workbench_theme.dart';
+import 'package:flutter_design/dev/storyboard/storyboards.dart';
 
 /// The "Storyboards" section: one entry per [Board]. Each renders the board as a
 /// pan/zoom graph — positioned iPhone frames connected by directed arrows

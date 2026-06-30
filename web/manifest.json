@@ -1,6 +1,6 @@
 {
-    "name": "vasc_pro",
-    "short_name": "vasc_pro",
+    "name": "flutter_design",
+    "short_name": "flutter_design",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

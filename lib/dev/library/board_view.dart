@@ -1,10 +1,10 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:vasc_pro/dev/library/device_frame.dart';
-import 'package:vasc_pro/dev/library/inspectable.dart';
-import 'package:vasc_pro/dev/library/workbench_theme.dart';
-import 'package:vasc_pro/dev/storyboard/storyboard_models.dart';
+import 'package:flutter_design/dev/library/device_frame.dart';
+import 'package:flutter_design/dev/library/inspectable.dart';
+import 'package:flutter_design/dev/library/workbench_theme.dart';
+import 'package:flutter_design/dev/storyboard/storyboard_models.dart';
 import 'package:widget_arrows/widget_arrows.dart';
 
 /// Renders a [Board] as a pan/zoom canvas. Each node becomes a positioned
