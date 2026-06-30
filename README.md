@@ -1,5 +1,9 @@
 # flutter-design
 
+<p align="center">
+  <img src="docs/cover.png" alt="flutter-design — a Flutter design-system workbench" width="100%">
+</p>
+
 A reusable **Flutter design-system workbench** — a sidebar + canvas workbench for
 building an app's UI in isolation, wiring its screens into a navigable storyboard,
 and walking the real flow. Copy it to start a new app; the scaffold carries the
@@ -54,6 +58,16 @@ workbench with three sections:
 - **Storyboards** — each storyboard rendered as a pan/zoom graph of iPhone frames.
 - **App** — walk a storyboard's flow interactively in a single frame.
 
+<p align="center">
+  <img src="docs/storyboard.png" alt="The Storyboards section — a pan/zoom map of every screen in the app" width="100%">
+</p>
+
+> A real snapshot of the **Storyboards** section: every screen of the app on one
+> pan/zoom canvas, connected by labeled arrows (`GET STARTED`, `HOME TAB`, …) that
+> show how the flow moves between screens. Drag to pan, scroll to zoom, and hover
+> any component in a frame to see its name. Each frame is a live, running instance
+> of your components — not a static mockup.
+
 Two design worlds are kept strictly separate:
 
 - **Tool chrome** — the workbench itself (`lib/dev/**`), styled with its own
@@ -61,6 +75,21 @@ Two design worlds are kept strictly separate:
 - **The app** — your product (`lib/components/**`, `lib/design_system/**`,
   `lib/content/**`, `lib/features/**`). Tool styling never leaks into your
   components, and vice versa.
+
+## Built to be edited by AI
+
+This scaffold is meant to be driven by an AI coding agent — you don't wire screens
+up by hand. The repo ships a [`CLAUDE.md`](CLAUDE.md) of conventions that is
+inherited when you copy it, so you point an agent (e.g. Claude Code) at the project
+and just describe what you want — *"add a settings screen", "make the accent color
+green", "connect Home → Profile"* — and it edits the design tokens, content layer,
+components, and storyboards for you.
+
+The structure exists to make those edits safe and consistent: style lives in one
+place (`lib/design_system/`), copy in another (`lib/content/`), components are
+registered in a single index, and storyboards are plain data. Change a token, a
+string, or a component once and it propagates to every screen and every storyboard
+frame — so a small edit from the agent lands everywhere it should.
 
 ## Single source of truth
 
