@@ -76,20 +76,22 @@ Two design worlds are kept strictly separate:
   `lib/content/**`, `lib/features/**`). Tool styling never leaks into your
   components, and vice versa.
 
-## Built to be edited by AI
+## AI-native — the interface is the AI
 
-This scaffold is meant to be driven by an AI coding agent — you don't wire screens
-up by hand. The repo ships a [`CLAUDE.md`](CLAUDE.md) of conventions that is
-inherited when you copy it, so you point an agent (e.g. Claude Code) at the project
-and just describe what you want — *"add a settings screen", "make the accent color
-green", "connect Home → Profile"* — and it edits the design tokens, content layer,
-components, and storyboards for you.
+You don't build with this scaffold by clicking around. **The way you use it is by
+talking to an AI agent** (e.g. Claude Code) and asking for changes — *"add a
+settings screen", "make the accent color green", "connect Home → Profile"* — and
+the agent writes the code. The workbench itself only *shows* your app (components,
+storyboards, the live flow); **there is no button to add a component, create a
+screen, or draw a storyboard edge — on purpose.** The AI makes the changes, not you.
 
-The structure exists to make those edits safe and consistent: style lives in one
-place (`lib/design_system/`), copy in another (`lib/content/`), components are
-registered in a single index, and storyboards are plain data. Change a token, a
-string, or a component once and it propagates to every screen and every storyboard
-frame — so a small edit from the agent lands everywhere it should.
+That single AI-native authoring path is the whole point. The repo ships a
+[`CLAUDE.md`](CLAUDE.md) of conventions that the agent inherits when you copy the
+scaffold, and the code is structured so those edits stay safe and consistent: style
+lives in one place (`lib/design_system/`), copy in another (`lib/content/`),
+components are registered in a single index, and storyboards are plain data. Change
+a token, a string, or a component once and it propagates to every screen and every
+storyboard frame — so a small request to the agent lands everywhere it should.
 
 ## Single source of truth
 
